@@ -30,6 +30,16 @@ public class UserService {
 
     public static final String COOKIE_NAME_TOKEN = "token";
 
+    /**
+     * 用户登录：
+     *
+     * 先查redis缓存，
+     * 缓存中没有再查数据库，
+     * 数据库查询结果写入缓存。
+     *
+     * @param id
+     * @return
+     */
     public User getById(long id) {
         //对象缓存
         User user = redisService.get(UserKey.getById, "" + id, User.class);
