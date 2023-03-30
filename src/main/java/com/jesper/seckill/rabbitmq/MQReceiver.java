@@ -50,7 +50,7 @@ public class MQReceiver {
         //判断重复秒杀
         SeckillOrder order = orderService.getOrderByUserIdGoodsId(user.getId(), goodsId);
         if(order != null) {
-            return;
+//            return;
         }
 
         //减库存 下订单 写入秒杀订单

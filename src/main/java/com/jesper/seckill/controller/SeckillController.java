@@ -13,6 +13,9 @@ import com.jesper.seckill.service.GoodsService;
 import com.jesper.seckill.service.OrderService;
 import com.jesper.seckill.service.SeckillService;
 import com.jesper.seckill.vo.GoodsVo;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,10 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jiangyunxiong on 2018/5/22.
@@ -48,7 +47,7 @@ public class SeckillController implements InitializingBean {
     @Autowired
     MQSender sender;
 
-    //基于令牌桶算法的限流实现类
+    //基于令牌桶算法的限流实现类，每秒生成10个令牌，后进来令牌都丢弃
     RateLimiter rateLimiter = RateLimiter.create(10);
 
     //做标记，判断该商品是否被处理过了
@@ -70,6 +69,7 @@ public class SeckillController implements InitializingBean {
     @ResponseBody
     public Result<Integer> list(Model model, User user, @RequestParam("goodsId") long goodsId) {
 
+        // true，获取到令牌立即返回，令牌桶中令牌-1；false，未获取到令牌等待1s后返回false
         if (!rateLimiter.tryAcquire(1000, TimeUnit.MILLISECONDS)) {
             return  Result.error(CodeMsg.ACCESS_LIMIT_REACHED);
         }
@@ -81,7 +81,7 @@ public class SeckillController implements InitializingBean {
         //内存标记，减少redis访问
         boolean over = localOverMap.get(goodsId);
         if (over) {
-            return Result.error(CodeMsg.SECKILL_OVER);
+//            return Result.error(CodeMsg.SECKILL_OVER);
         }
         //预减库存
         long stock = redisService.decr(GoodsKey.getGoodsStock, "" + goodsId);//10
@@ -96,7 +96,7 @@ public class SeckillController implements InitializingBean {
         //判断重复秒杀
         SeckillOrder order = orderService.getOrderByUserIdGoodsId(user.getId(), goodsId);
         if (order != null) {
-            return Result.error(CodeMsg.REPEATE_SECKILL);
+//            return Result.error(CodeMsg.REPEATE_SECKILL);
         }
         //入队
         SeckillMessage message = new SeckillMessage();

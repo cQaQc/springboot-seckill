@@ -7,11 +7,10 @@ import com.jesper.seckill.mapper.OrderMapper;
 import com.jesper.seckill.redis.OrderKey;
 import com.jesper.seckill.redis.RedisService;
 import com.jesper.seckill.vo.GoodsVo;
+import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
 
 /**
  * Created by jiangyunxiong on 2018/5/23.
@@ -54,7 +53,7 @@ public class OrderService {
         seckillOrder.setGoodsId(goods.getId());
         seckillOrder.setOrderId(orderInfo.getId());
         seckillOrder.setUserId(user.getId());
-        orderMapper.insertSeckillOrder(seckillOrder);
+//        orderMapper.insertSeckillOrder(seckillOrder);
 
         redisService.set(OrderKey.getSeckillOrderByUidGid, "" + user.getId() + "_" + goods.getId(), seckillOrder);
 
